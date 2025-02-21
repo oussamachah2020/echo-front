@@ -8,6 +8,7 @@ import { LuLoaderCircle } from "react-icons/lu";
 import { BsEnvelopeAt } from "react-icons/bs";
 import { FiLock } from "react-icons/fi";
 import { FaRegUser } from "react-icons/fa6";
+import Link from "next/link";
 
 // Validation Schema using Zod
 const signInSchema = z.object({
@@ -108,6 +109,12 @@ const Page = () => {
             "Create Account"
           )}
         </Button>
+        <p className="text-center text-sm">
+          Already In ?{" "}
+          <Link href={"/sign-in"} className="text-blue-500 font-semibold">
+            Sign in
+          </Link>
+        </p>
       </form>
     </div>
   );

@@ -1,21 +1,26 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+const base_url = "http://localhost:8080/api/v1";
 
-type AuthState = {
-  accessToken: string | null;
-  setAccessToken: (value: string | null) => void;
-  logout: () => void;
-};
+export async function Login(credentials: {
+  username: string;
+  password: string;
+}) {
+  try {
+    const response = await fetch(`${base_url}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: credentials.username,
+        password: credentials.password,
+      }),
+    });
 
-export const AuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
-      accessToken: null,
-      setAccessToken: (value) => set({ accessToken: value }),
-      logout: () => set({ accessToken: null }),
-    }),
-    {
-      name: "auth-storage", // Key for localStorage
+    if (response.ok) {
+      const token: string = await response.text();
+      return token;
     }
-  )
-);
+  } catch (error) {
+    console.error(error);
+  }
+}

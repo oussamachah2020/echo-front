@@ -7,11 +7,16 @@ import { Input, Button } from "@chakra-ui/react";
 import { LuLoaderCircle } from "react-icons/lu";
 import { BsEnvelopeAt } from "react-icons/bs";
 import { FiLock } from "react-icons/fi";
-import { FaRegUser } from "react-icons/fa6";
+import Link from "next/link";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "react-query";
+import { Login } from "@/loaders/auth";
+import { PiUserCircleDashedDuotone } from "react-icons/pi";
+import { useAuthStore } from "@/zustand/auth";
 
 // Validation Schema using Zod
 const signInSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  username: z.string(),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -23,11 +28,22 @@ const Page = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<SignInFormData>({
-    // resolver: zodResolver(signInSchema),
+    resolver: zodResolver(signInSchema),
+  });
+  const { setAccessToken } = useAuthStore();
+
+  const { mutate, isLoading, error } = useMutation((data: SignInFormData) => {
+    return Login(data)
+      .then((res) => {
+        if (res) {
+          setAccessToken(res);
+        }
+      })
+      .catch((err) => console.error(err));
   });
 
   const onSubmit = async (data: SignInFormData) => {
-    console.log("Sign In Data:", data);
+    mutate(data);
   };
 
   return (
@@ -44,20 +60,20 @@ const Page = () => {
 
         <div className="space-y-2 mt-5">
           <div className="flex flex-row gap-2">
-            <BsEnvelopeAt className="h-5 w-5 text-blue-600" />
+            <PiUserCircleDashedDuotone className="h-5 w-5 text-blue-600" />
             <label htmlFor="email" className="text-blue-600">
-              Email
+              Username
             </label>
           </div>
           <Input
-            id="email"
-            type="email"
-            {...register("email")}
+            id="username"
+            type="text"
+            {...register("username")}
             className=" border-gray-200 h-12 rounded-md border pl-2 outline-none focus:border-blue-300"
-            placeholder="example@gmail.com"
+            placeholder="JohnDoe"
           />
-          {errors.email && (
-            <p className="text-red-500 text-sm">{errors.email.message}</p>
+          {errors.username && (
+            <p className="text-red-500 text-sm">{errors.username.message}</p>
           )}
         </div>
         <div className="space-y-2">
@@ -84,12 +100,18 @@ const Page = () => {
           className="w-full text-white rounded-md font-semibold h-12"
           disabled={isSubmitting}
         >
-          {isSubmitting ? (
+          {isLoading || isSubmitting ? (
             <LuLoaderCircle className="h-6 w-6 text-white animate-spin" />
           ) : (
-            "Create Account"
+            "Login"
           )}
         </Button>
+        <p className="text-center text-sm">
+          Don't have an account ?{" "}
+          <Link href={"/sign-up"} className="text-blue-500 font-semibold">
+            Sign up
+          </Link>
+        </p>
       </form>
     </div>
   );
